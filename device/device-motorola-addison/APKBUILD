@@ -7,7 +7,7 @@ url="https://postmarketos.org"
 license="MIT"
 arch="aarch64"
 options="!check !archcheck"
-depends="postmarketos-base linux-motorola-addison mkbootimg mesa-dri-swrast"
+depends="postmarketos-base linux-motorola-addison mkbootimg mesa-dri-swrast libsparse msm-fb-refresher"
 makedepends="devicepkg-dev"
 source="deviceinfo"
 
@@ -19,5 +19,5 @@ package() {
 	devicepkg_package $startdir $pkgname
 }
 
-sha512sums="(run 'pmbootstrap checksum device-motorola-addison' to fill)"
 
+sha512sums="e6ef60fb74e06c420655340287095fc98720adb4e115aa459e48c22960444ff577739c89bfc94b4d41e902772d11b31bfa452404e1dba20f3fe7cd4ddd1c03fb  deviceinfo"
