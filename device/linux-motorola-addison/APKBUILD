@@ -1,0 +1,74 @@
+# Reference: <https://postmarketos.org/vendorkernel>
+# Kernel config based on: arch/arm64/configs/(CHANGEME!)
+
+pkgname="linux-motorola-addison"
+pkgver=3.18.115
+pkgrel=0
+pkgdesc="Motorola Moto Z Play kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="motorola-addison"
+url="https://kernel.org"
+license="GPL-2.0-only"
+options="!strip !check !tracedeps"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev devicepkg-dev dtbtool gcc6"
+
+## Compiler: latest GCC from Alpine
+#HOSTCC="${CC:-gcc}"
+#HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+if [ "${CC:0:5}" != "gcc6-" ]; then
+	CC="gcc6-$CC"
+	HOSTCC="gcc6-gcc"
+	CROSS_COMPILE="gcc6-$CROSS_COMPILE"
+fi
+
+# Source
+_repository="android_kernel_motorola_msm8953"
+_commit="0866d2d7ea36cd51b3b07d232e3cd348e22d81a7"
+_config="config-${_flavor}.${arch}"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/Alberto97/${_repository}/archive/${_commit}.tar.gz
+	$_config
+"
+builddir="$srcdir/${_repository}-${_commit}"
+
+prepare() {
+	default_prepare
+	downstreamkernel_prepare "$srcdir" "$builddir" "$_config" "$_carch" "$HOSTCC"
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+
+	# Generate master DTB (deviceinfo_bootimg_qcdt)
+	dtbTool -s 2048 -p "scripts/dtc/" -o "arch/arm64/boot/dt.img" "arch/arm64/boot/"
+}
+
+package() {
+	# kernel.release
+	install -D "$builddir/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+	# zImage (find the right one)
+	cd "$builddir/arch/$_carch/boot"
+	_target="$pkgdir/boot/vmlinuz-$_flavor"
+	for _zimg in zImage-dtb Image.gz-dtb *zImage Image; do
+		[ -e "$_zimg" ] || continue
+		msg "zImage found: $_zimg"
+		install -Dm644 "$_zimg" "$_target"
+		break
+	done
+	if ! [ -e "$_target" ]; then
+		error "Could not find zImage in $PWD!"
+		return 1
+	fi
+
+	# Master DTB (deviceinfo_bootimg_qcdt)
+	install -Dm644 "$builddir/arch/arm64/boot/dt.img" \
+		"$pkgdir/boot/dt.img"
+}
+
+sha512sums="c05d49b5d7578f815537659c1228fe7fb3a632fc15a7af18fb3c73fbb484ee6d0fdeacb36506240e9fdd76af65d1ea1d69f9db87579101ba2571cc73e6f9d447  linux-motorola-addison-0866d2d7ea36cd51b3b07d232e3cd348e22d81a7.tar.gz
+6c1fa5e06a648cb41ebdf91cf84843c43b4ad0350368b5b734115dffc7794882d4f6ce175ab253d60aaee60eea1780c78292003e39001ad22e7c3c6eb53e3a11  config-motorola-addison.aarch64"
