@@ -23,12 +23,16 @@ if [ "${CC:0:5}" != "gcc6-" ]; then
 fi
 
 # Source
-_repository="android_kernel_motorola_msm8953"
-_commit="0866d2d7ea36cd51b3b07d232e3cd348e22d81a7"
+_repository="linux"
+#_commit="0866d2d7ea36cd51b3b07d232e3cd348e22d81a7" # pie
+#_commit="24efc258ab838b0d19a5d65918ff2cc3105ac4fb" # cm-14.1-next
+_commit="883b9049a6eceb5405d95420b97331bc89674f78" # motorola-addison/pie-fixes
 _config="config-${_flavor}.${arch}"
 source="
-	$pkgname-$_commit.tar.gz::https://github.com/Alberto97/${_repository}/archive/${_commit}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/samueldr/${_repository}/archive/${_commit}.tar.gz
 	$_config
+	04_fix_camera_msm_isp.patch
+	05_misc_msm_fixes.patch
 "
 builddir="$srcdir/${_repository}-${_commit}"
 
@@ -70,5 +74,7 @@ package() {
 		"$pkgdir/boot/dt.img"
 }
 
-sha512sums="c05d49b5d7578f815537659c1228fe7fb3a632fc15a7af18fb3c73fbb484ee6d0fdeacb36506240e9fdd76af65d1ea1d69f9db87579101ba2571cc73e6f9d447  linux-motorola-addison-0866d2d7ea36cd51b3b07d232e3cd348e22d81a7.tar.gz
-0779343ac60551ca7f2edb37cce11ee4037faf5c41b5f96422cbcdd9765adcc1230f3bf44a3c150a7654cc8a95309ea8903741f8159460c1e133faad8c9d2e19  config-motorola-addison.aarch64"
+sha512sums="8b913d0ebd92365b3def8612f49ed327ede058058bf0c0e06eecc1821f8a4cc3af341a080fb6be8592bae706d99be9dd510676a917529fcf8122c7f63f0d6db8  linux-motorola-addison-883b9049a6eceb5405d95420b97331bc89674f78.tar.gz
+0779343ac60551ca7f2edb37cce11ee4037faf5c41b5f96422cbcdd9765adcc1230f3bf44a3c150a7654cc8a95309ea8903741f8159460c1e133faad8c9d2e19  config-motorola-addison.aarch64
+8b4457fac0943ab0aed842e9d0e27ee78294fff74a65db9fe0e9aa9ff4a88bee9208c63c186f1759b220bbd16d2a2a6dbd65a84309accbc713bf466bf41e2852  04_fix_camera_msm_isp.patch
+7f893418ebdf16ee333ca2e9b68bad10547bf4973c981fd2a111df9c7981441a5f0aa14d6ad5e5d235bc4e5ec21ce46711dd27041e80fd1e206ec71ee274db21  05_misc_msm_fixes.patch"
